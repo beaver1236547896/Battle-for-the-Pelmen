@@ -12,7 +12,7 @@ from settings import (
 from assets import AssetManager
 from player import Pelmen, Grimlock
 from enemies import WalkingEnemy, FlyingEnemy, Boss
-from ui import HUDzz
+from ui import HUD
 
 
 class Game:
