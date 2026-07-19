@@ -41,7 +41,7 @@ class Game:
         self.camera_x = 0
         self.running = True
 
-        self.background_image = self.assets.load_image(None, (SCREEN_WIDTH, SCREEN_HEIGHT), SKY_BLUE)
+        self.background_image = self.assets.load_image("14.jpg", (SCREEN_WIDTH, SCREEN_HEIGHT), SKY_BLUE)
         self.ground_image = self.assets.load_image(None, (TILE_SIZE, GROUND_HEIGHT), BROWN)
         self.platform_image = self.assets.load_image(None, (TILE_SIZE, 24), DARK_GREEN)
 

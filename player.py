@@ -185,7 +185,7 @@ class Pelmen(Player):
         self.attack_cooldown = 16
         self.special_cooldown = 180
         self.image = assets.load_image("котпуль.png", (PLAYER_WIDTH, PLAYER_HEIGHT), ORANGE)
-        self.projectile_image = assets.load_image(None, (16, 16), CREAM, shape="circle")
+        self.projectile_image = assets.load_image("fi.png", (16, 16), CREAM, shape="circle")
 
     def shoot(self, enemies):
         if self.attack_cooldown_timer <= 0:
