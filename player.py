@@ -2,7 +2,7 @@ import pygame
 from settings import (
     GRAVITY, MAX_FALL_SPEED, PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPEED,
     PLAYER_JUMP_STRENGTH, PLAYER_INVULN_TIME, PROJECTILE_SPEED, PROJECTILE_LIFETIME,
-    WHITE, RED, ORANGE, CREAM, GRAY
+    WHITE, RED, ORANGE, CREAM, GRAY, DARK_GREEN, YELLOW
 )
 
 
@@ -44,6 +44,37 @@ class AoEEffect:
         layer = pygame.Surface((self.max_radius * 2, self.max_radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(layer, (*self.color, alpha), (self.max_radius, self.max_radius), radius, width=6)
         surface.blit(layer, (self.x - offset_x - self.max_radius, self.y - self.max_radius))
+
+
+class FireBreathEffect:
+    def __init__(self, origin_x, origin_y, length, height, direction, lifetime=22):
+        self.origin_x = origin_x
+        self.origin_y = origin_y
+        self.length = length
+        self.height = height
+        self.direction = direction
+        self.lifetime = lifetime
+        self.timer = 0
+
+    def update(self):
+        self.timer += 1
+        return self.timer < self.lifetime
+
+    def draw(self, surface, offset_x):
+        progress = self.timer / self.lifetime
+        reach = int(self.length * min(1.0, progress * 2.2))
+        alpha = max(0, 255 - int(255 * (progress ** 1.5)))
+        layer = pygame.Surface((self.length, self.height), pygame.SRCALPHA)
+        segments = 5
+        for i in range(segments):
+            seg_w = max(2, int(reach * (segments - i) / segments))
+            seg_h = max(4, self.height - i * (self.height // segments))
+            seg_x = 0 if self.direction == 1 else self.length - seg_w
+            seg_y = (self.height - seg_h) // 2
+            seg_color = (255, 90 + i * 25, 10, max(0, alpha - i * 30))
+            pygame.draw.rect(layer, seg_color, (seg_x, seg_y, seg_w, seg_h), border_radius=8)
+        draw_x = self.origin_x if self.direction == 1 else self.origin_x - self.length
+        surface.blit(layer, (draw_x - offset_x, self.origin_y - self.height // 2))
 
 
 class Player(pygame.sprite.Sprite):
@@ -153,7 +184,7 @@ class Pelmen(Player):
         self.name = "Pelmen"
         self.attack_cooldown = 16
         self.special_cooldown = 180
-        self.image = assets.load_image(None, (PLAYER_WIDTH, PLAYER_HEIGHT), ORANGE)
+        self.image = assets.load_image("котпуль.png", (PLAYER_WIDTH, PLAYER_HEIGHT), ORANGE)
         self.projectile_image = assets.load_image(None, (16, 16), CREAM, shape="circle")
 
     def shoot(self, enemies):
@@ -181,8 +212,13 @@ class Grimlock(Player):
         super().__init__(x, y, assets)
         self.name = "Grimlock"
         self.attack_cooldown = 40
-        self.special_cooldown = 210
+        self.special_cooldown = 260
         self.image = assets.load_image(None, (PLAYER_WIDTH, PLAYER_HEIGHT), GRAY)
+        self.trex_image = assets.load_image(
+            None, (int(PLAYER_WIDTH * 1.7), int(PLAYER_HEIGHT * 1.35)), DARK_GREEN
+        )
+        self.transform_timer = 0
+        self.transform_duration = 45
 
     def shoot(self, enemies):
         if self.attack_cooldown_timer <= 0 and self.on_ground:
@@ -198,10 +234,45 @@ class Grimlock(Player):
     def special_attack(self, enemies):
         if self.special_cooldown_timer <= 0 and self.on_ground:
             self.special_cooldown_timer = self.special_cooldown
-            radius = 240
-            for enemy in enemies:
-                if not getattr(enemy, "is_flying", False):
-                    dx = enemy.rect.centerx - self.rect.centerx
-                    if abs(dx) <= radius and abs(enemy.rect.bottom - self.rect.bottom) <= 90:
-                        enemy.take_damage(3)
-            self.effects.append(AoEEffect(self.rect.centerx, self.rect.bottom, radius, RED, lifetime=24))
+            self.transform_timer = self.transform_duration
+
+            breath_length = 360
+            breath_height = 80
+            origin_x = self.rect.right if self.facing == 1 else self.rect.left
+            origin_y = self.rect.centery
+
+            if self.facing == 1:
+                breath_rect = pygame.Rect(origin_x, origin_y - breath_height // 2, breath_length, breath_height)
+            else:
+                breath_rect = pygame.Rect(origin_x - breath_length, origin_y - breath_height // 2, breath_length, breath_height)
+
+            targets_in_line = [
+                enemy for enemy in enemies
+                if breath_rect.colliderect(enemy.rect)
+            ]
+            targets_in_line.sort(key=lambda enemy: abs(enemy.rect.centerx - self.rect.centerx))
+
+            for enemy in targets_in_line[:3]:
+                enemy.take_damage(4)
+
+            self.effects.append(
+                FireBreathEffect(origin_x, origin_y, breath_length, breath_height, self.facing)
+            )
+
+    def update(self, keys, platforms):
+        super().update(keys, platforms)
+        if self.transform_timer > 0:
+            self.transform_timer -= 1
+
+    def draw(self, surface, offset_x):
+        blink_visible = self.invuln_timer == 0 or (self.invuln_timer // 4) % 2 == 0
+        if blink_visible:
+            if self.transform_timer > 0:
+                trex_rect = self.trex_image.get_rect(midbottom=self.rect.move(-offset_x, 0).midbottom)
+                surface.blit(self.trex_image, trex_rect)
+            else:
+                surface.blit(self.image, self.rect.move(-offset_x, 0))
+        for proj in self.projectiles:
+            surface.blit(proj.image, proj.rect.move(-offset_x, 0))
+        for effect in self.effects:
+            effect.draw(surface, offset_x)

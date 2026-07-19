@@ -67,13 +67,13 @@ class Game:
             self.floating_platforms.append(rect)
 
         self.walking_enemies = []
-        walker_positions = [500, 1000, 1550, 2150, 2750, 3350, 3950]
+        walker_positions = [500, 1100, 1750, 2450, 3150, 3850]
         for x in walker_positions:
             enemy = WalkingEnemy(x, GROUND_Y - 48, self.assets, x - 150, x + 150)
             self.walking_enemies.append(enemy)
 
         self.flying_enemies = []
-        flyer_positions = [1250, 2450, 3650, 4450]
+        flyer_positions = [2100, 2800, 3500]
         for x in flyer_positions:
             enemy = FlyingEnemy(x, GROUND_Y - 260, self.assets, x - 200, x + 200)
             self.flying_enemies.append(enemy)
@@ -108,20 +108,26 @@ class Game:
                     elif event.key == pygame.K_2:
                         self.start_game(CHARACTER_GRIMLOCK)
                 elif self.state == STATE_PLAYING:
-                    if event.key in (pygame.K_j, pygame.K_z):
+                    if event.key == pygame.K_j:
                         self.player.shoot(self.get_all_enemies())
-                    if event.key in (pygame.K_k, pygame.K_x):
+                    if event.key == pygame.K_k:
                         self.player.special_attack(self.get_all_enemies())
                 elif self.state in (STATE_GAME_OVER, STATE_VICTORY):
                     if event.key == pygame.K_r:
                         self.state = STATE_CHARACTER_SELECT
 
-            if event.type == pygame.MOUSEBUTTONDOWN and self.state == STATE_CHARACTER_SELECT:
-                mx, my = event.pos
-                if self.pelmen_button.collidepoint(mx, my):
-                    self.start_game(CHARACTER_PELMEN)
-                elif self.grimlock_button.collidepoint(mx, my):
-                    self.start_game(CHARACTER_GRIMLOCK)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.state == STATE_CHARACTER_SELECT:
+                    mx, my = event.pos
+                    if self.pelmen_button.collidepoint(mx, my):
+                        self.start_game(CHARACTER_PELMEN)
+                    elif self.grimlock_button.collidepoint(mx, my):
+                        self.start_game(CHARACTER_GRIMLOCK)
+                elif self.state == STATE_PLAYING:
+                    if event.button == 1:
+                        self.player.shoot(self.get_all_enemies())
+                    elif event.button == 3:
+                        self.player.special_attack(self.get_all_enemies())
 
     def update(self):
         if self.state != STATE_PLAYING:
@@ -204,7 +210,7 @@ class Game:
         hint = self.hud.font.render("Click a hero or press 1 / 2", True, WHITE)
         self.screen.blit(hint, hint.get_rect(center=(SCREEN_WIDTH // 2, 650)))
 
-        controls = self.hud.font.render("Move: A/D  Jump: SPACE  Attack: J  Special: K", True, WHITE)
+        controls = self.hud.font.render("Move: A/D  Jump: SPACE  Attack: J / LMB  Special: K / RMB", True, WHITE)
         self.screen.blit(controls, controls.get_rect(center=(SCREEN_WIDTH // 2, 680)))
 
     def draw_world(self):

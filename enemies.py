@@ -9,7 +9,7 @@ from settings import (
 )
 from player import Projectile
 
-FLYING_DETECTION_RANGE = 220
+FLYING_DETECTION_RANGE = 180
 
 
 class WalkingEnemy(pygame.sprite.Sprite):
@@ -24,7 +24,7 @@ class WalkingEnemy(pygame.sprite.Sprite):
         self.health = WALKING_ENEMY_HEALTH
         self.patrol_start = patrol_start
         self.patrol_end = patrol_end
-        self.image = assets.load_image(None, (40, 48), PURPLE)
+        self.image = assets.load_image("grim.png", (40, 48), PURPLE)
         self.invuln_timer = 0
         self.on_ground = True
         self.is_dead = False
