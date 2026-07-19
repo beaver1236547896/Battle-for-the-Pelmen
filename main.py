@@ -1,11 +1,12 @@
 import sys
+import math
 import pygame
 
 from settings import (
     SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TITLE,
     STATE_CHARACTER_SELECT, STATE_PLAYING, STATE_GAME_OVER, STATE_VICTORY,
     CHARACTER_PELMEN, CHARACTER_GRIMLOCK,
-    WHITE, BLACK, SKY_BLUE, BROWN, DARK_GREEN, ORANGE, GRAY, RED, YELLOW,
+    WHITE, BLACK, SKY_BLUE, BROWN, DARK_GREEN, ORANGE, GRAY, DARK_GRAY, RED, YELLOW, CREAM,
     TILE_SIZE, GROUND_HEIGHT, GROUND_Y, LEVEL_WIDTH,
     PLAYER_HEIGHT, ENEMY_CONTACT_DAMAGE, BOSS_CONTACT_DAMAGE, BOSS_HEIGHT
 )
@@ -193,25 +194,116 @@ class Game:
         pygame.draw.rect(self.screen, WHITE, self.pelmen_button, 4, border_radius=16)
         pygame.draw.rect(self.screen, WHITE, self.grimlock_button, 4, border_radius=16)
 
+        pelmen_portrait_rect = pygame.Rect(0, 0, self.pelmen_button.width - 40, 170)
+        pelmen_portrait_rect.midtop = (self.pelmen_button.centerx, self.pelmen_button.y + 16)
+        grimlock_portrait_rect = pygame.Rect(0, 0, self.grimlock_button.width - 40, 170)
+        grimlock_portrait_rect.midtop = (self.grimlock_button.centerx, self.grimlock_button.y + 16)
+
+        self.draw_pelmen_portrait(pelmen_portrait_rect)
+        self.draw_grimlock_portrait(grimlock_portrait_rect)
+
         pelmen_label = self.hud.sub_font.render("Pelmen (1)", True, WHITE)
         grimlock_label = self.hud.sub_font.render("Grimlock (2)", True, WHITE)
         self.screen.blit(pelmen_label, pelmen_label.get_rect(center=(self.pelmen_button.centerx, self.pelmen_button.bottom + 30)))
         self.screen.blit(grimlock_label, grimlock_label.get_rect(center=(self.grimlock_button.centerx, self.grimlock_button.bottom + 30)))
 
-        pelmen_desc = ["Ranged minced meat shots", "Aroma AoE explosion special"]
-        grimlock_desc = ["Ground stomp shockwaves", "Bigger stomp special attack"]
+        pelmen_desc = ["Стріляє фаршем", "", "вібух аромата"]
+        grimlock_desc = ["гупає ногою по земілі", "", "трансформується і", "відригає вогнем"]
+        desc_y = pelmen_portrait_rect.bottom + 12
         for i, line in enumerate(pelmen_desc):
             text = self.hud.font.render(line, True, BLACK)
-            self.screen.blit(text, (self.pelmen_button.x + 16, self.pelmen_button.y + 16 + i * 30))
+            self.screen.blit(text, text.get_rect(center=(self.pelmen_button.centerx, desc_y + i * 28)))
         for i, line in enumerate(grimlock_desc):
             text = self.hud.font.render(line, True, BLACK)
-            self.screen.blit(text, (self.grimlock_button.x + 16, self.grimlock_button.y + 16 + i * 30))
+            self.screen.blit(text, text.get_rect(center=(self.grimlock_button.centerx, desc_y + i * 28)))
 
         hint = self.hud.font.render("Click a hero or press 1 / 2", True, WHITE)
         self.screen.blit(hint, hint.get_rect(center=(SCREEN_WIDTH // 2, 650)))
 
         controls = self.hud.font.render("Move: A/D  Jump: SPACE  Attack: J / LMB  Special: K / RMB", True, WHITE)
         self.screen.blit(controls, controls.get_rect(center=(SCREEN_WIDTH // 2, 680)))
+
+    def draw_pelmen_portrait(self, rect):
+        cx = rect.centerx
+        cy = rect.centery + 14
+        body_rect = pygame.Rect(0, 0, int(rect.width * 0.72), int(rect.height * 0.62))
+        body_rect.center = (cx, cy)
+        pygame.draw.ellipse(self.screen, CREAM, body_rect)
+        pygame.draw.ellipse(self.screen, (190, 140, 80), body_rect, 3)
+
+        seam_rect = pygame.Rect(body_rect.x - 6, body_rect.y - 22, body_rect.width + 12, 46)
+        pygame.draw.arc(self.screen, (190, 140, 80), seam_rect, math.radians(20), math.radians(160), 5)
+
+        eye_y = cy - 8
+        pygame.draw.circle(self.screen, BLACK, (cx - 20, eye_y), 7)
+        pygame.draw.circle(self.screen, BLACK, (cx + 20, eye_y), 7)
+        pygame.draw.circle(self.screen, WHITE, (cx - 22, eye_y - 2), 2)
+        pygame.draw.circle(self.screen, WHITE, (cx + 18, eye_y - 2), 2)
+
+        pygame.draw.circle(self.screen, (235, 150, 150), (cx - 34, cy + 14), 8)
+        pygame.draw.circle(self.screen, (235, 150, 150), (cx + 34, cy + 14), 8)
+
+        mouth_rect = pygame.Rect(cx - 18, cy + 4, 36, 22)
+        pygame.draw.arc(self.screen, BLACK, mouth_rect, math.radians(200), math.radians(340), 3)
+
+        leg_y = body_rect.bottom - 6
+        pygame.draw.circle(self.screen, CREAM, (cx - 26, leg_y), 12)
+        pygame.draw.circle(self.screen, CREAM, (cx + 26, leg_y), 12)
+        pygame.draw.circle(self.screen, (190, 140, 80), (cx - 26, leg_y), 12, 2)
+        pygame.draw.circle(self.screen, (190, 140, 80), (cx + 26, leg_y), 12, 2)
+
+    def draw_grimlock_portrait(self, rect):
+        cx = rect.centerx
+        cy = rect.centery + 20
+
+        body_rect = pygame.Rect(0, 0, int(rect.width * 0.5), int(rect.height * 0.42))
+        body_rect.center = (cx, cy + 24)
+        pygame.draw.rect(self.screen, GRAY, body_rect, border_radius=10)
+        pygame.draw.rect(self.screen, DARK_GRAY, body_rect, 3, border_radius=10)
+
+        tail_points = [
+            (body_rect.left + 6, body_rect.bottom - 10),
+            (body_rect.left - 34, body_rect.bottom + 16),
+            (body_rect.left + 10, body_rect.bottom - 22),
+        ]
+        pygame.draw.polygon(self.screen, GRAY, tail_points)
+        pygame.draw.polygon(self.screen, DARK_GRAY, tail_points, 2)
+
+        head_rect = pygame.Rect(0, 0, int(rect.width * 0.4), int(rect.height * 0.34))
+        head_rect.midbottom = (cx + 10, body_rect.top + 14)
+        pygame.draw.rect(self.screen, GRAY, head_rect, border_radius=8)
+        pygame.draw.rect(self.screen, DARK_GRAY, head_rect, 3, border_radius=8)
+
+        snout_rect = pygame.Rect(0, 0, int(head_rect.width * 0.5), int(head_rect.height * 0.5))
+        snout_rect.midleft = (head_rect.right - 6, head_rect.centery + 6)
+        pygame.draw.rect(self.screen, GRAY, snout_rect, border_radius=6)
+        pygame.draw.rect(self.screen, DARK_GRAY, snout_rect, 2, border_radius=6)
+
+        eye_pos = (head_rect.centerx - 2, head_rect.centery - 6)
+        pygame.draw.circle(self.screen, RED, eye_pos, 6)
+        pygame.draw.circle(self.screen, YELLOW, eye_pos, 6, 2)
+
+        for i in range(3):
+            tooth_x = snout_rect.right - 6 - i * 5
+            pygame.draw.polygon(self.screen, WHITE, [
+                (tooth_x, snout_rect.bottom - 2),
+                (tooth_x - 3, snout_rect.bottom + 8),
+                (tooth_x + 3, snout_rect.bottom + 8),
+            ])
+
+        arm_rect_left = pygame.Rect(0, 0, 14, 34)
+        arm_rect_left.midtop = (body_rect.left + 6, body_rect.centery)
+        arm_rect_right = pygame.Rect(0, 0, 14, 34)
+        arm_rect_right.midtop = (body_rect.right - 6, body_rect.centery)
+        pygame.draw.rect(self.screen, DARK_GRAY, arm_rect_left, border_radius=4)
+        pygame.draw.rect(self.screen, DARK_GRAY, arm_rect_right, border_radius=4)
+
+        leg_rect_left = pygame.Rect(0, 0, 18, 22)
+        leg_rect_left.midtop = (body_rect.centerx - 20, body_rect.bottom - 4)
+        leg_rect_right = pygame.Rect(0, 0, 18, 22)
+        leg_rect_right.midtop = (body_rect.centerx + 20, body_rect.bottom - 4)
+        pygame.draw.rect(self.screen, DARK_GRAY, leg_rect_left, border_radius=5)
+        pygame.draw.rect(self.screen, DARK_GRAY, leg_rect_right, border_radius=5)
 
     def draw_world(self):
         self.screen.blit(self.background_image, (0, 0))

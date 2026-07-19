@@ -213,9 +213,9 @@ class Grimlock(Player):
         self.name = "Grimlock"
         self.attack_cooldown = 40
         self.special_cooldown = 260
-        self.image = assets.load_image(None, (PLAYER_WIDTH, PLAYER_HEIGHT), GRAY)
+        self.image = assets.load_image('grim.png', (PLAYER_WIDTH, PLAYER_HEIGHT), GRAY)
         self.trex_image = assets.load_image(
-            None, (int(PLAYER_WIDTH * 1.7), int(PLAYER_HEIGHT * 1.35)), DARK_GREEN
+            "grim-din.png", (int(PLAYER_WIDTH * 1.7), int(PLAYER_HEIGHT * 1.35)), DARK_GREEN
         )
         self.transform_timer = 0
         self.transform_duration = 45

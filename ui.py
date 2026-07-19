@@ -74,7 +74,7 @@ class HUD:
 
     def draw_center_text(self, surface, title, subtitle, color=WHITE):
         title_surf = self.title_font.render(title, True, color)
-        surface.blit(title_surf, title_surf.get_rect(center=(SCREEN_WIDTH // 2, surface.get_height() // 2 - 40)))
+        surface.blit(title_surf, title_surf.get_rect(center=(SCREEN_WIDTH // 2, surface.get_height() // 2 - 400)))
         if subtitle:
             sub_surf = self.sub_font.render(subtitle, True, WHITE)
-            surface.blit(sub_surf, sub_surf.get_rect(center=(SCREEN_WIDTH // 2, surface.get_height() // 2 + 30)))
+            surface.blit(sub_surf, sub_surf.get_rect(center=(SCREEN_WIDTH // 2, surface.get_height() // 2 + 300)))
